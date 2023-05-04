@@ -30,6 +30,8 @@
 
 #define LC_IDLE_PERIOD	1000000 //microseconds
 
+#define STATUS_TIME_POS 107
+
 //Board related
 #define LC_CH 	ADS1256_AIN0
 #define REF_CH	ADS1256_AIN1
@@ -80,6 +82,7 @@ void lc_do_lc_prepare(void);
 void lc_do_lc_running(void);
 void lc_do_lc_stopping(void);
 void lc_convert_and_send_data(float32_t * Buf, uint8_t Len);
+void lc_send_greeting(void);
 void lc_Error_Handler(void);
 
 

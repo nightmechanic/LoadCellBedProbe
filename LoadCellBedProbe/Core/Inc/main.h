@@ -29,7 +29,11 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
 
+#include "stm32f4xx_ll_dma.h"
+#include "stm32f4xx_ll_iwdg.h"
+#include "stm32f4xx_ll_rtc.h"
 #include "stm32f4xx_ll_spi.h"
+#include "stm32f4xx_ll_tim.h"
 #include "stm32f4xx_ll_system.h"
 #include "stm32f4xx_ll_gpio.h"
 #include "stm32f4xx_ll_exti.h"
@@ -38,7 +42,6 @@ extern "C" {
 #include "stm32f4xx_ll_rcc.h"
 #include "stm32f4xx_ll_utils.h"
 #include "stm32f4xx_ll_pwr.h"
-#include "stm32f4xx_ll_dma.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */

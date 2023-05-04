@@ -2,7 +2,6 @@
 #include "ads1256.h"
 
 
-extern TIM_HandleTypeDef htim3;
 
 //HAL funtions for ADC
 
@@ -46,9 +45,9 @@ ADS1256C_StatusTypeDef ads1256_HAL_SPI_Transfer(uint8_t bytecount){
 
 
 	//wait for (RX) transfer completion
-	__HAL_TIM_SET_COUNTER(&htim3,0);
+	LL_TIM_SetCounter(TIM3, 0);
 	while (!LL_DMA_IsActiveFlag_TC3(DMA1)) {
-		if ( (__HAL_TIM_GET_COUNTER(&htim3)) > (bytecount * SPI_TIMEOUT_US) ) {
+		if ( (LL_TIM_GetCounter(TIM3)) > (bytecount * SPI_TIMEOUT_US) ) {
 					return ADS1256_SPI_TIMEOUT;
 				}
 	}
@@ -89,9 +88,9 @@ ADS1256C_StatusTypeDef ads1256_init(void){
 
 	//wait for DRDY to go low after reset calibration
 
-	__HAL_TIM_SET_COUNTER(&htim3,0);
+	LL_TIM_SetCounter(TIM3, 0);
 	while (ads1256_HAL_is_DRDY_high()){
-		if ( (__HAL_TIM_GET_COUNTER(&htim3)) > DRDY_CAL_TIMEOUT_US ) {
+		if ( (LL_TIM_GetCounter(TIM3)) > DRDY_CAL_TIMEOUT_US ) {
 			return ADS1256_DRDY_TIMEOUT;
 		}
 
@@ -154,9 +153,9 @@ ADS1256C_StatusTypeDef ads1256_configure(ADS1256_DRATE ads_rate, ADS1256_GAIN ad
 
 	//wait for DRDY to go low after calibration
 
-	__HAL_TIM_SET_COUNTER(&htim3,0);
+	LL_TIM_SetCounter(TIM3, 0);
 	while (ads1256_HAL_is_DRDY_high()){
-		if ( (__HAL_TIM_GET_COUNTER(&htim3)) > DRDY_CAL_TIMEOUT_US ) {
+		if ( (LL_TIM_GetCounter(TIM3)) > DRDY_CAL_TIMEOUT_US ) {
 			return ADS1256_DRDY_TIMEOUT;
 		}
 	}
@@ -180,9 +179,9 @@ ADS1256C_StatusTypeDef ads1256_get_samples(float32_t * sample_buffer, uint16_t s
 		TX_Buffer[0] = CMD_RDATA;
 		//wait for DRDY to go low
 		__disable_irq();
-		__HAL_TIM_SET_COUNTER(&htim3,0);
+		LL_TIM_SetCounter(TIM3, 0);
 		while ( ads1256_HAL_is_DRDY_high() ){
-			if ( (__HAL_TIM_GET_COUNTER(&htim3)) > DRDY_SHORT_TIMEOUT_US ) {
+			if ( (LL_TIM_GetCounter(TIM3)) > DRDY_SHORT_TIMEOUT_US ) {
 				return ADS1256_DRDY_TIMEOUT;
 			}
 		}
@@ -210,6 +209,7 @@ ADS1256C_StatusTypeDef ads1256_get_samples(float32_t * sample_buffer, uint16_t s
 			}
 		*sample_buffer = NewDataInt * conversion_factor;
 		sample_buffer++;
+		sample_count--;
 	}
 	return ADS1256_OK;
 }
@@ -225,9 +225,9 @@ ADS1256C_StatusTypeDef ads1256_send_command(ADS1256_COMMANDS command){
 
 	//wait for DRDY to go low
 	__disable_irq();
-	__HAL_TIM_SET_COUNTER(&htim3,0);
+	LL_TIM_SetCounter(TIM3, 0);
 	while (ads1256_HAL_is_DRDY_high()){
-		if ( (__HAL_TIM_GET_COUNTER(&htim3)) > DRDY_SHORT_TIMEOUT_US ) {
+		if ( (LL_TIM_GetCounter(TIM3)) > DRDY_SHORT_TIMEOUT_US ) {
 			__enable_irq();
 			return ADS1256_DRDY_TIMEOUT;
 		}

@@ -7,13 +7,19 @@
 #include "usbd_cdc_if.h"
 
 
-extern TIM_HandleTypeDef htim3;
+const char __attribute__ ((aligned(4))) greeting_message[] =
+		"###########################################\n"
+		"Hello!\n"
+		"Load Cell Bed Probe FW Version 0.1\n"
+		"\xA9 Nightmechanic, May 2023\n"
+		"###########################################\n";
 
 char __attribute__ ((aligned(4))) status_message[] =
 		"Current Status:\n"
 		"Supply Voltage:         V\n"
 		"Temperature:         C\n"
-		"Load:            grams\n";
+		"Load:            grams\n"
+		"Time from reset: 00h:00m:00s\n";
 
 
 
@@ -25,6 +31,7 @@ const float32_t GramScaleFactor = 0.000894069671631f; //5V/23bit/pga_gain/mV/ext
 float32_t ProbeScaleFactor = GramScaleFactor * 1.0;
 float32_t ProbeThresholdUp;
 float32_t ProbeThresholdDn;
+uint32_t IdleCounter = 0;
 
 char __attribute__ ((aligned(4))) TxBuffer[512];
 
@@ -33,8 +40,8 @@ char __attribute__ ((aligned(4))) TxBuffer[512];
 
 void delay_us (uint16_t us)
 {
-	__HAL_TIM_SET_COUNTER(&htim3,0);  // set the counter value a 0
-	while (__HAL_TIM_GET_COUNTER(&htim3) < us);  // wait for the counter to reach the us input in the parameter
+	LL_TIM_SetCounter(TIM3, 0);  // set the counter value a 0
+	while ( LL_TIM_GetCounter(TIM3) < us);  // wait for the counter to reach the us input in the parameter
 }
 
 //LoadCell functions
@@ -153,8 +160,11 @@ void lc_do_lc_idle(void){
 	char valueBuf[10];
 	uint8_t index;
 	uint8_t numBytes;
+	uint32_t utime;
 
+	const char digits[] = "0123456789";
 
+	IdleCounter++;
 	// Measure voltage
 	status = lc_measure_5V(&measurements.V5Voltage);
 	if (status != LC_OK) {
@@ -249,6 +259,19 @@ void lc_do_lc_idle(void){
 		return;
 	}
 
+	//Hours
+	utime = LL_RTC_TIME_GetHour(RTC);
+	status_message[STATUS_TIME_POS] = digits[(utime>>4) & 0x0f];
+	status_message[STATUS_TIME_POS+1] = digits[utime & 0x0f];
+	//Minutes
+	utime = LL_RTC_TIME_GetMinute(RTC);
+	status_message[STATUS_TIME_POS+3] = digits[(utime>>4) & 0x0f];
+	status_message[STATUS_TIME_POS+4] = digits[utime & 0x0f];
+	//Seconds
+	utime = LL_RTC_TIME_GetSecond(RTC);
+	status_message[STATUS_TIME_POS+6] = digits[(utime>>4) & 0x0f];
+	status_message[STATUS_TIME_POS+7] = digits[utime & 0x0f];
+
 	CDC_Transmit_FS((uint8_t *)status_message, sizeof(status_message));
 
 
@@ -299,7 +322,7 @@ void lc_do_lc_prepare(void){
 
 	NVIC_ClearPendingIRQ(DMA1_Stream3_IRQn);
 	NVIC_ClearPendingIRQ(DMA1_Stream4_IRQn);
-	NVIC_ClearPendingIRQ(DMA1_Stream4_IRQn);
+	NVIC_ClearPendingIRQ(EXTI15_10_IRQn);
 
 	__enable_irq();
 
@@ -308,13 +331,10 @@ void lc_do_lc_prepare(void){
 void lc_do_lc_running(void){
 
 	if (LastCollectedPointer == 64){
-
 		if (ProbeDataPointer > 64) {
 			ProbeStarted = 1;
 			LastCollectedPointer = 0;
 			lc_convert_and_send_data(&ProbeDataBuffer[LastCollectedPointer], 64);
-
-
 		}
 	} else if (ProbeStarted==1) {
 		if (ProbeDataPointer < 64){
@@ -357,7 +377,7 @@ void lc_do_lc_stopping(void){
 
 	NVIC_ClearPendingIRQ(DMA1_Stream3_IRQn);
 	NVIC_ClearPendingIRQ(DMA1_Stream4_IRQn);
-	NVIC_ClearPendingIRQ(DMA1_Stream4_IRQn);
+	NVIC_ClearPendingIRQ(EXTI15_10_IRQn);
 
 
 
@@ -375,6 +395,10 @@ void lc_convert_and_send_data(float32_t * Buf, uint8_t Len){
 	CDC_Transmit_FS((uint8_t *)TxBuffer, (Len * 8));
 
 
+}
+
+void lc_send_greeting(void){
+	CDC_Transmit_FS((uint8_t *)greeting_message, sizeof(greeting_message));
 }
 
 void lc_Error_Handler(void)
