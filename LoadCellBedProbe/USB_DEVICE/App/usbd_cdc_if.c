@@ -31,7 +31,6 @@
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-uint8_t USBTxDataPending = 0;
 uint16_t TxWrPointer = 0;
 uint16_t TxRdPointer = 0;
 uint16_t TxPendingPointer = 0;
