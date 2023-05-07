@@ -286,33 +286,33 @@ uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len)
   /* USER CODE BEGIN 7 */
   USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
 
-  int16_t TxLen = 0;
+  	int16_t TxLen = 0;
     int16_t Occubuf, tail_size;
 
-    if (Len>0){
+	if (Len>0){
 
-  	  Occubuf = TxWrPointer - TxRdPointer; // calculate occupied space
+	  Occubuf = TxWrPointer - TxRdPointer; // calculate occupied space
 
-  	  if (Occubuf < 0) { //wrap around?
-  		  Occubuf +=  APP_TX_DATA_SIZE;
-  	  }
-  	  if (Len > (APP_TX_DATA_SIZE - Occubuf)){ // not enough space
-  		  return USBD_FAIL;
-  	  }
+	  if (Occubuf < 0) { //wrap around?
+		  Occubuf +=  APP_TX_DATA_SIZE;
+	  }
+	  if (Len > (APP_TX_DATA_SIZE - Occubuf)){ // not enough space
+		  return USBD_FAIL;
+	  }
 
-  	  tail_size = APP_TX_DATA_SIZE - TxWrPointer;
-  	  if ( tail_size >= Len){ 					//enough room in tail
-  		  my_memcpy(&UserTxBufferFS[TxWrPointer], Buf, Len);
+	  tail_size = APP_TX_DATA_SIZE - TxWrPointer;
+	  if ( tail_size >= Len){ 					//enough room in tail
+		  my_memcpy(&UserTxBufferFS[TxWrPointer], Buf, Len);
 
-  		  TxWrPointer = (TxWrPointer + Len) & (APP_TX_DATA_SIZE - 1); //wrap around the pointer
+		  TxWrPointer = (TxWrPointer + Len) & (APP_TX_DATA_SIZE - 1); //wrap around the pointer
 
-  	  } else { 										//Not enough room in tail...
-  		  my_memcpy(&UserTxBufferFS[TxWrPointer], Buf, tail_size);
-  		  my_memcpy(UserTxBufferFS, &Buf[tail_size], (Len - tail_size));
-  		  TxWrPointer = TxWrPointer + (Len - tail_size);
-  	  }
+	  } else { 										//Not enough room in tail...
+		  my_memcpy(&UserTxBufferFS[TxWrPointer], Buf, tail_size);
+		  my_memcpy(UserTxBufferFS, &Buf[tail_size], (Len - tail_size));
+		  TxWrPointer = TxWrPointer + (Len - tail_size);
+	  }
 
-    }
+	}
 
 
     if (hcdc->TxState != 0){
@@ -326,13 +326,15 @@ uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len)
   			  (APP_TX_DATA_SIZE - TxRdPointer));
   	  result = USBD_CDC_TransmitPacket(&hUsbDeviceFS);
   	  TxPendingPointer = 0;
+  	  result = USBD_BUSY;
 
     }
     if (TxLen > 0) { // no wrap around we can send entire buffer
   	  USBD_CDC_SetTxBuffer(&hUsbDeviceFS, &UserTxBufferFS[TxRdPointer],
   	  			  TxLen);
-  	  	  result = USBD_CDC_TransmitPacket(&hUsbDeviceFS);
-  	  	  TxPendingPointer = TxWrPointer;
+  	  result = USBD_CDC_TransmitPacket(&hUsbDeviceFS);
+  	  TxPendingPointer = TxWrPointer;
+  	  result = USBD_BUSY;
     }
 
   /* USER CODE END 7 */

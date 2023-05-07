@@ -59,6 +59,7 @@ const char __attribute__ ((aligned(4))) watchdog_message[] =
 												"Watchdog Reset!!!!!!!\n"
 												"Watchdog Reset!!!!!!!\n";
 
+static const char ThisFileName[] = "main.c";
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -215,7 +216,7 @@ int main(void)
 		  lc_mode = LC_IDLE;
 		  break;
 	  default:
-		  lc_Error_Handler();
+		  lc_Error_Handler( ThisFileName, sizeof(ThisFileName), __LINE__);
 	  }
     /* USER CODE END WHILE */
 

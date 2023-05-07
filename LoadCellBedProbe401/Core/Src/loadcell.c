@@ -6,6 +6,7 @@
 #include "utilities.h"
 #include "usbd_cdc_if.h"
 
+static const char ThisFileName[] = "loadcell.c";
 
 const char __attribute__ ((aligned(4))) greeting_message[] =
 		"###########################################\n"
@@ -21,6 +22,11 @@ char __attribute__ ((aligned(4))) status_message[] =
 		"Load:            grams\n"
 		"Time from reset: dddDays, HHh:MMm:SSs\n";
 
+char __attribute__ ((aligned(4))) line_error_message[] =
+		"***********************************\n"
+		"Error !!!\n"
+		"Line xxxx in file:                 \n"
+		"***********************************\n";
 
 
 float32_t ProbeDataBuffer[128];
@@ -170,7 +176,7 @@ void lc_do_lc_idle(void){
 	// Measure voltage
 	status = lc_measure_5V(&measurements.V5Voltage);
 	if (status != LC_OK) {
-		lc_Error_Handler();
+		lc_Error_Handler( ThisFileName, sizeof(ThisFileName), __LINE__);
 	}
 
 
@@ -181,7 +187,7 @@ void lc_do_lc_idle(void){
 	//Measure temp
 	status = lc_measure_ntc_R(NTC1_CH, &resistance);
 	if (status != LC_OK) {
-		lc_Error_Handler();
+		lc_Error_Handler( ThisFileName, sizeof(ThisFileName), __LINE__);
 	}
 	measurements.Temperature = lc_ntc_r2tempC(resistance);
 
@@ -191,7 +197,7 @@ void lc_do_lc_idle(void){
 
 	status = lc_measure_ntc_R(NTC2_CH, &resistance);
 	if (status != LC_OK) {
-		lc_Error_Handler();
+		lc_Error_Handler( ThisFileName, sizeof(ThisFileName), __LINE__);
 	}
 	measurements.Temperature += lc_ntc_r2tempC(resistance);
 
@@ -201,7 +207,7 @@ void lc_do_lc_idle(void){
 
 	status = lc_measure_ntc_R(NTC3_CH, &resistance);
 	if (status != LC_OK) {
-		lc_Error_Handler();
+		lc_Error_Handler( ThisFileName, sizeof(ThisFileName), __LINE__);
 	}
 	measurements.Temperature += lc_ntc_r2tempC(resistance);
 
@@ -211,7 +217,7 @@ void lc_do_lc_idle(void){
 
 	status = lc_measure_ntc_R(NTC4_CH, &resistance);
 	if (status != LC_OK) {
-		lc_Error_Handler();
+		lc_Error_Handler( ThisFileName, sizeof(ThisFileName), __LINE__);
 	}
 	measurements.Temperature += lc_ntc_r2tempC(resistance);
 	//Average all NTCs
@@ -225,7 +231,7 @@ void lc_do_lc_idle(void){
 
 	status = lc_measure_load(&measurements.Load);
 	if (status != LC_OK) {
-		lc_Error_Handler();
+		lc_Error_Handler( ThisFileName, sizeof(ThisFileName), __LINE__);
 	}
 
 	if ( LL_GPIO_IsInputPinSet(Control_GPIO_Port, Control_Pin) ){
@@ -313,14 +319,14 @@ void lc_do_lc_prepare(void){
 
 	status = lc_measure_5V(&V5Vmeasurement);
 	if (status != LC_OK) {
-		lc_Error_Handler();
+		lc_Error_Handler( ThisFileName, sizeof(ThisFileName), __LINE__);
 	}
 
 	ProbeScaleFactor = (V5Vmeasurement * 1e6)/5.0 * GramScaleFactor;
 
 	status = lc_measure_load(&Load);
 	if (status != LC_OK) {
-		lc_Error_Handler();
+		lc_Error_Handler( ThisFileName, sizeof(ThisFileName), __LINE__);
 	}
 
 	ProbeThresholdUp = Load + PROBE_THRESHOLD;
@@ -329,12 +335,12 @@ void lc_do_lc_prepare(void){
 	ads_status =  ads1256_configure(PROBE_RATE, PROBE_GAIN,
 							LC_CH, REF_CH, 0);
 	if (ads_status != ADS1256_OK){
-		lc_Error_Handler();
+		lc_Error_Handler( ThisFileName, sizeof(ThisFileName), __LINE__);
 	}
 
 	ads_status = ads1256_send_command(CMD_RDATAC);
 	if (ads_status != ADS1256_OK){
-		lc_Error_Handler();
+		lc_Error_Handler( ThisFileName, sizeof(ThisFileName), __LINE__);
 	}
 
 	ProbeDataPointer = 0;
@@ -428,10 +434,36 @@ void lc_send_greeting(void){
 	CDC_Transmit_FS((uint8_t *)greeting_message, sizeof(greeting_message));
 }
 
-void lc_Error_Handler(void)
+void lc_Error_Handler(const char * FileName, uint8_t NameLength, uint16_t LineNumber)
 {
+	uint8_t i;
+	uint16_t rem, val;
+	const char digits[] = "0123456789";
 	// Set probe output
 	LL_GPIO_ResetOutputPin(Probe_Out_GPIO_Port, Probe_Out_Pin);
+
+	// insert line number
+	for (i=0; i<4; i++) {
+		rem = (uint16_t)(LineNumber / 10);
+		val = LineNumber - (rem * 10);
+		line_error_message[ERROR_LINE_POS + 3 - i] = digits[val];
+		LineNumber = rem;
+	}
+	// insert filename
+	if (NameLength > ERROR_MAX_FILENAME) {
+		NameLength = ERROR_MAX_FILENAME;
+	}
+	for (i=0; i < NameLength; i++){
+		line_error_message[ERROR_FILE_POS + i] = FileName[i];
+	}
+
+	while (CDC_Transmit_FS((uint8_t *)line_error_message, sizeof(line_error_message)) == USBD_FAIL){
+
+	}
+
+	while ( CDC_Transmit_FS((uint8_t *)line_error_message,0) == USBD_BUSY ){
+
+	}
 
 	__disable_irq();
 	while (1)
