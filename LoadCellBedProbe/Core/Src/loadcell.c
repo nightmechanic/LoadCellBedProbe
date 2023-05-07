@@ -265,12 +265,12 @@ void lc_do_lc_idle(void){
 	status_message[STATUS_TIME_POS+1] = digits[utime & 0x0f];
 	//Minutes
 	utime = LL_RTC_TIME_GetMinute(RTC);
-	status_message[STATUS_TIME_POS+3] = digits[(utime>>4) & 0x0f];
-	status_message[STATUS_TIME_POS+4] = digits[utime & 0x0f];
+	status_message[STATUS_TIME_POS+4] = digits[(utime>>4) & 0x0f];
+	status_message[STATUS_TIME_POS+5] = digits[utime & 0x0f];
 	//Seconds
 	utime = LL_RTC_TIME_GetSecond(RTC);
-	status_message[STATUS_TIME_POS+6] = digits[(utime>>4) & 0x0f];
-	status_message[STATUS_TIME_POS+7] = digits[utime & 0x0f];
+	status_message[STATUS_TIME_POS+8] = digits[(utime>>4) & 0x0f];
+	status_message[STATUS_TIME_POS+9] = digits[utime & 0x0f];
 
 	CDC_Transmit_FS((uint8_t *)status_message, sizeof(status_message));
 

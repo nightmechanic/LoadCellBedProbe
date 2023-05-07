@@ -28,7 +28,7 @@
 #define PROBE_THRESHOLD 	100.0 // grams above baseline
 #define PROBE_HYSTERESIS	50.0 // grams
 
-#define LC_IDLE_PERIOD	1000000 //microseconds
+#define LC_IDLE_PERIOD	1000 //milliseconds (TIM2)
 
 #define STATUS_TIME_POS 107
 

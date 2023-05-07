@@ -79,7 +79,6 @@ void Error_Handler(void);
 #define Probe_Out_GPIO_Port GPIOB
 #define ADC_DRDY_Pin LL_GPIO_PIN_12
 #define ADC_DRDY_GPIO_Port GPIOB
-#define ADC_DRDY_EXTI_IRQn EXTI15_10_IRQn
 #define ADC_CS_Pin LL_GPIO_PIN_13
 #define ADC_CS_GPIO_Port GPIOB
 
