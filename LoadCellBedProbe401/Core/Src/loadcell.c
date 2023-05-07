@@ -162,7 +162,7 @@ void lc_do_lc_idle(void){
 	char valueBuf[10];
 	uint8_t index;
 	uint8_t numBytes;
-	uint32_t utime, seconds, hour2;
+	uint32_t utime;
 
 	const char digits[] = "0123456789";
 
@@ -262,32 +262,29 @@ void lc_do_lc_idle(void){
 	}
 
 
-	do {
-		//Seconds
-		seconds = LL_RTC_TIME_GetSecond(RTC);
-		status_message[STATUS_TIME_POS+8] = digits[(seconds>>4) & 0x0f];
-		status_message[STATUS_TIME_POS+9] = digits[seconds & 0x0f];
-		//Minutes
-		utime = LL_RTC_TIME_GetMinute(RTC);
-		status_message[STATUS_TIME_POS+4] = digits[(utime>>4) & 0x0f];
-		status_message[STATUS_TIME_POS+5] = digits[utime & 0x0f];
-		//Hours
-		utime = LL_RTC_TIME_GetHour(RTC);
-		status_message[STATUS_TIME_POS] = digits[(utime>>4) & 0x0f];
-		status_message[STATUS_TIME_POS+1] = digits[utime & 0x0f];
-		hour2 = (utime>>4) & 0x0f;
+	utime = LL_RTC_TIME_Get(RTC);
 
-		utime = LL_RTC_TIME_GetSecond(RTC);
+	//Hours
+	status_message[STATUS_TIME_POS] = digits[(utime>>20) & 0x0f];
+	status_message[STATUS_TIME_POS+1] = digits[(utime>>16) & 0x0f];
+	//Minutes
+	status_message[STATUS_TIME_POS+4] = digits[(utime>>12) & 0x0f];
+	status_message[STATUS_TIME_POS+5] = digits[(utime>>8) & 0x0f];
+	//Seconds
+	status_message[STATUS_TIME_POS+8] = digits[(utime>>4) & 0x0f];
+	status_message[STATUS_TIME_POS+9] = digits[utime & 0x0f];
 
-	}while (seconds != utime);
+	//Has a day passed?
+	utime = (utime>>20) & 0x0f;
 
-	if (hour2 > 0){
+	if (utime > 0){		// are we passed 10:00?
 		dayFlag = 1;
-	} else if (dayFlag == 1) {
+	} else if (dayFlag == 1) { // are we passed 23:59:59 ?
 		dayDigit[0] += 1;
 		dayFlag = 0;
 	}
 
+	//Day counter wrap-around
 	if (dayDigit[0] >= 10){
 		dayDigit[0] = 0;
 		dayDigit[1] += 1;
@@ -299,9 +296,9 @@ void lc_do_lc_idle(void){
 			}
 		}
 	}
-	status_message[STATUS_DAY_POS] = dayDigit[2];
-	status_message[STATUS_DAY_POS + 1] = dayDigit[1];
-	status_message[STATUS_DAY_POS + 2] = dayDigit[0];
+	status_message[STATUS_DAY_POS] = digits[dayDigit[2]];
+	status_message[STATUS_DAY_POS + 1] = digits[dayDigit[1]];
+	status_message[STATUS_DAY_POS + 2] = digits[dayDigit[0]];
 
 	CDC_Transmit_FS((uint8_t *)status_message, sizeof(status_message));
 

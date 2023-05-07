@@ -54,6 +54,11 @@ uint8_t SpiDmaRxBuf[8];
 uint8_t SpiDmaTxBuf[8];
 const uint8_t emptybuf[4]= { 0, 0, 0, 0 };
 
+const char __attribute__ ((aligned(4))) watchdog_message[] =
+												"Watchdog Reset!!!!!!!\n"
+												"Watchdog Reset!!!!!!!\n"
+												"Watchdog Reset!!!!!!!\n";
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -81,6 +86,7 @@ static void MX_TIM3_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+
 	float32_t iir_coeffs[5 * IIR_NUMSTAGES] = IIR_COEFFS;
 	float32_t iir_state[4 * IIR_NUMSTAGES];
 
@@ -88,6 +94,7 @@ int main(void)
 	//uint8_t MA_buffer_sent = 1;
 	LC_ModeTypeDef lc_mode = LC_IDLE;
 	uint8_t DummyBuffer[8];
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -116,6 +123,13 @@ int main(void)
   MX_TIM3_Init();
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
+
+  //check for IWDG flag:
+  if (__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST)){
+	  CDC_Transmit_FS((uint8_t *)watchdog_message, sizeof(watchdog_message));
+	  __HAL_RCC_CLEAR_RESET_FLAGS();
+  }
+
 
   // set ADC SPI CS
 	LL_GPIO_SetOutputPin(ADC_CS_GPIO_Port, ADC_CS_Pin);
