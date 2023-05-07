@@ -19,7 +19,7 @@ char __attribute__ ((aligned(4))) status_message[] =
 		"Supply Voltage:         V\n"
 		"Temperature:         C\n"
 		"Load:            grams\n"
-		"Time from reset: 00h:00m:00s\n";
+		"Time from reset: dddDays, HHh:MMm:SSs\n";
 
 
 
@@ -32,6 +32,8 @@ float32_t ProbeScaleFactor = GramScaleFactor * 1.0;
 float32_t ProbeThresholdUp;
 float32_t ProbeThresholdDn;
 uint32_t IdleCounter = 0;
+uint8_t dayFlag = 0;
+uint8_t dayDigit[3] = {0};
 
 char __attribute__ ((aligned(4))) TxBuffer[512];
 
@@ -160,7 +162,7 @@ void lc_do_lc_idle(void){
 	char valueBuf[10];
 	uint8_t index;
 	uint8_t numBytes;
-	uint32_t utime;
+	uint32_t utime, seconds, hour2;
 
 	const char digits[] = "0123456789";
 
@@ -259,21 +261,49 @@ void lc_do_lc_idle(void){
 		return;
 	}
 
-	//Hours
-	utime = LL_RTC_TIME_GetHour(RTC);
-	status_message[STATUS_TIME_POS] = digits[(utime>>4) & 0x0f];
-	status_message[STATUS_TIME_POS+1] = digits[utime & 0x0f];
-	//Minutes
-	utime = LL_RTC_TIME_GetMinute(RTC);
-	status_message[STATUS_TIME_POS+4] = digits[(utime>>4) & 0x0f];
-	status_message[STATUS_TIME_POS+5] = digits[utime & 0x0f];
-	//Seconds
-	utime = LL_RTC_TIME_GetSecond(RTC);
-	status_message[STATUS_TIME_POS+8] = digits[(utime>>4) & 0x0f];
-	status_message[STATUS_TIME_POS+9] = digits[utime & 0x0f];
+
+	do {
+		//Seconds
+		seconds = LL_RTC_TIME_GetSecond(RTC);
+		status_message[STATUS_TIME_POS+8] = digits[(seconds>>4) & 0x0f];
+		status_message[STATUS_TIME_POS+9] = digits[seconds & 0x0f];
+		//Minutes
+		utime = LL_RTC_TIME_GetMinute(RTC);
+		status_message[STATUS_TIME_POS+4] = digits[(utime>>4) & 0x0f];
+		status_message[STATUS_TIME_POS+5] = digits[utime & 0x0f];
+		//Hours
+		utime = LL_RTC_TIME_GetHour(RTC);
+		status_message[STATUS_TIME_POS] = digits[(utime>>4) & 0x0f];
+		status_message[STATUS_TIME_POS+1] = digits[utime & 0x0f];
+		hour2 = (utime>>4) & 0x0f;
+
+		utime = LL_RTC_TIME_GetSecond(RTC);
+
+	}while (seconds != utime);
+
+	if (hour2 > 0){
+		dayFlag = 1;
+	} else if (dayFlag == 1) {
+		dayDigit[0] += 1;
+		dayFlag = 0;
+	}
+
+	if (dayDigit[0] >= 10){
+		dayDigit[0] = 0;
+		dayDigit[1] += 1;
+		if (dayDigit[1] >= 10){
+			dayDigit[1] = 0;
+			dayDigit[2] += 1;
+			if (dayDigit[2] >= 10){
+				dayDigit[2] = 0;
+			}
+		}
+	}
+	status_message[STATUS_DAY_POS] = dayDigit[2];
+	status_message[STATUS_DAY_POS + 1] = dayDigit[1];
+	status_message[STATUS_DAY_POS + 2] = dayDigit[0];
 
 	CDC_Transmit_FS((uint8_t *)status_message, sizeof(status_message));
-
 
 }
 

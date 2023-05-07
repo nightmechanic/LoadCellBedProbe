@@ -30,7 +30,8 @@
 
 #define LC_IDLE_PERIOD	1000 //milliseconds (TIM2)
 
-#define STATUS_TIME_POS 107
+#define STATUS_TIME_POS 116
+#define STATUS_DAY_POS 107
 
 //Board related
 #define LC_CH 	ADS1256_AIN0

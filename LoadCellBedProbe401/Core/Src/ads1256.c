@@ -2,6 +2,8 @@
 #include "ads1256.h"
 
 
+uint8_t RX_Buffer[8];
+uint8_t TX_Buffer[8];
 
 //HAL funtions for ADC
 
@@ -70,11 +72,6 @@ ADS1256C_StatusTypeDef ads1256_HAL_SPI_Transfer(uint8_t bytecount){
 	return ADS1256_OK;
 }
 
-
-
-
-uint8_t RX_Buffer[8];
-uint8_t TX_Buffer[8];
 
 ADS1256C_StatusTypeDef ads1256_init(void){
 
