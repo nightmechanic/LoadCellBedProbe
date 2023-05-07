@@ -273,17 +273,18 @@ void DMA1_Stream4_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles EXTI line[15:10] interrupts.
+  * @brief This function handles EXTI line[9:5] interrupts.
   */
-void EXTI15_10_IRQHandler(void)
+void EXTI9_5_IRQHandler(void)
 {
-  /* USER CODE BEGIN EXTI15_10_IRQn 0 */
+  /* USER CODE BEGIN EXTI9_5_IRQn 0 */
 
-  /* USER CODE END EXTI15_10_IRQn 0 */
-  if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_12) != RESET)
+  /* USER CODE END EXTI9_5_IRQn 0 */
+  if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_8) != RESET)
   {
-    LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_12);
-    /* USER CODE BEGIN LL_EXTI_LINE_12 */
+    LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_8);
+    /* USER CODE BEGIN LL_EXTI_LINE_8 */
+
     LL_GPIO_ResetOutputPin(ADC_CS_GPIO_Port, ADC_CS_Pin);
 	LL_SPI_Enable(SPI2);
 
@@ -291,11 +292,11 @@ void EXTI15_10_IRQHandler(void)
 	LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_3); //RX
 	LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_4); //TX
 
-    /* USER CODE END LL_EXTI_LINE_12 */
+    /* USER CODE END LL_EXTI_LINE_8 */
   }
-  /* USER CODE BEGIN EXTI15_10_IRQn 1 */
+  /* USER CODE BEGIN EXTI9_5_IRQn 1 */
 
-  /* USER CODE END EXTI15_10_IRQn 1 */
+  /* USER CODE END EXTI9_5_IRQn 1 */
 }
 
 /**

@@ -73,15 +73,21 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define Control_Pin LL_GPIO_PIN_0
 #define Control_GPIO_Port GPIOB
-#define ADC_Reset_Pin LL_GPIO_PIN_1
-#define ADC_Reset_GPIO_Port GPIOB
-#define Probe_Out_Pin LL_GPIO_PIN_2
+#define Probe_Out_Pin LL_GPIO_PIN_1
 #define Probe_Out_GPIO_Port GPIOB
-#define ADC_DRDY_Pin LL_GPIO_PIN_12
-#define ADC_DRDY_GPIO_Port GPIOB
-#define ADC_DRDY_EXTI_IRQn EXTI15_10_IRQn
-#define ADC_CS_Pin LL_GPIO_PIN_13
+#define SW1_Pin LL_GPIO_PIN_2
+#define SW1_GPIO_Port GPIOB
+#define SW2_Pin LL_GPIO_PIN_10
+#define SW2_GPIO_Port GPIOB
+#define ADC_CS_Pin LL_GPIO_PIN_12
 #define ADC_CS_GPIO_Port GPIOB
+#define ADC_DRDY_Pin LL_GPIO_PIN_8
+#define ADC_DRDY_GPIO_Port GPIOA
+#define ADC_DRDY_EXTI_IRQn EXTI9_5_IRQn
+#define ADC_Reset_Pin LL_GPIO_PIN_9
+#define ADC_Reset_GPIO_Port GPIOA
+#define ADC_PDWN_Pin LL_GPIO_PIN_10
+#define ADC_PDWN_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 
