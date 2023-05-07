@@ -122,6 +122,10 @@ int main(void)
 	// Set probe output
 	LL_GPIO_SetOutputPin(Probe_Out_GPIO_Port, Probe_Out_Pin);
 
+	//SW GPIOs
+	LL_GPIO_ResetOutputPin(SW1_GPIO_Port, SW1_Pin);
+	LL_GPIO_ResetOutputPin(SW2_GPIO_Port, SW2_Pin);
+
 	/* Configure SPI1 DMA transfer interrupts */
 	/* Enable DMA RX Interrupt */
 	LL_SPI_EnableDMAReq_RX(SPI2);

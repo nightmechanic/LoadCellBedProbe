@@ -216,6 +216,8 @@ void DMA1_Stream3_IRQHandler(void)
 	int32_t NewDataInt;
 	float32_t NewDataF32, FilterOutput;
 
+	LL_GPIO_SetOutputPin(SW1_GPIO_Port, SW1_Pin); //debug
+
 	if (LL_DMA_IsActiveFlag_TC3(DMA1)){
 		LL_DMA_ClearFlag_TC3(DMA1);
 
@@ -245,6 +247,9 @@ void DMA1_Stream3_IRQHandler(void)
 		MA_wr_idx++;
 		MA_wr_idx &= ( MA_BUFFER_LENGTH - 1 );
 	}
+
+	LL_GPIO_ResetOutputPin(SW1_GPIO_Port, SW1_Pin); //debug
+
   /* USER CODE END DMA1_Stream3_IRQn 0 */
 
   /* USER CODE BEGIN DMA1_Stream3_IRQn 1 */
@@ -285,12 +290,16 @@ void EXTI9_5_IRQHandler(void)
     LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_8);
     /* USER CODE BEGIN LL_EXTI_LINE_8 */
 
+    LL_GPIO_SetOutputPin(SW2_GPIO_Port, SW2_Pin); //debug
+
     LL_GPIO_ResetOutputPin(ADC_CS_GPIO_Port, ADC_CS_Pin);
 	LL_SPI_Enable(SPI2);
 
 	/* Enable DMA Channels */
 	LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_3); //RX
 	LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_4); //TX
+
+	LL_GPIO_ResetOutputPin(SW2_GPIO_Port, SW2_Pin); //debug
 
     /* USER CODE END LL_EXTI_LINE_8 */
   }
