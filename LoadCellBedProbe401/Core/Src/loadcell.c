@@ -166,12 +166,9 @@ void lc_do_lc_idle(void){
 
 	const char digits[] = "0123456789";
 
-	//Need to exit power down?
-	if ( !LL_GPIO_IsOutputPinSet(ADC_PDWN_GPIO_Port, ADC_PDWN_Pin) ){
-		LL_GPIO_SetOutputPin(ADC_PDWN_GPIO_Port, ADC_PDWN_Pin);
-		// wait for oscillator to settle
-		delay_us(20000);
-		delay_us(20000);
+	//Exit ADS standby
+	if (ads1256_send_command(CMD_WAKEUP) != ADS1256_OK){
+		lc_Error_Handler( ThisFileName, sizeof(ThisFileName), __LINE__);
 	}
 
 
@@ -309,8 +306,10 @@ void lc_do_lc_idle(void){
 
 	CDC_Transmit_FS((uint8_t *)status_message, sizeof(status_message));
 
-	// ADS power down
-	LL_GPIO_ResetOutputPin(ADC_PDWN_GPIO_Port, ADC_PDWN_Pin);
+	// ADS standby
+	if (ads1256_send_command(CMD_STANDBY) != ADS1256_OK){
+			lc_Error_Handler( ThisFileName, sizeof(ThisFileName), __LINE__);
+		}
 
 }
 
@@ -320,12 +319,9 @@ void lc_do_lc_prepare(void){
 	float32_t V5Vmeasurement = 5.0;
 	float32_t Load = 0.0;
 
-	//Need to exit power down?
-	if ( !LL_GPIO_IsOutputPinSet(ADC_PDWN_GPIO_Port, ADC_PDWN_Pin) ){
-		LL_GPIO_SetOutputPin(ADC_PDWN_GPIO_Port, ADC_PDWN_Pin);
-		// wait for oscillator to settle
-		delay_us(20000);
-		delay_us(20000);
+	//Exit ADS standby
+	if (ads1256_send_command(CMD_WAKEUP) != ADS1256_OK){
+		lc_Error_Handler( ThisFileName, sizeof(ThisFileName), __LINE__);
 	}
 
 	status = lc_measure_5V(&V5Vmeasurement);
@@ -422,6 +418,16 @@ void lc_do_lc_stopping(void){
 	NVIC_ClearPendingIRQ(DMA1_Stream3_IRQn);
 	NVIC_ClearPendingIRQ(DMA1_Stream4_IRQn);
 	NVIC_ClearPendingIRQ(EXTI15_10_IRQn);
+
+	// stop continuous mode
+	if (ads1256_send_command(CMD_SDATAC) != ADS1256_OK){
+		lc_Error_Handler( ThisFileName, sizeof(ThisFileName), __LINE__);
+	}
+
+	// ADS standby
+	if (ads1256_send_command(CMD_STANDBY) != ADS1256_OK){
+		lc_Error_Handler( ThisFileName, sizeof(ThisFileName), __LINE__);
+	}
 
 
 

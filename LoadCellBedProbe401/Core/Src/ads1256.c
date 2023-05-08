@@ -121,6 +121,8 @@ ADS1256C_StatusTypeDef ads1256_init(void){
 	if (RX_Buffer[0] != ADS1256_30000_SPS) {
 		return ADS1256_MISMATCH;
 	}
+
+
 	return ADS1256_OK;
 
 }
