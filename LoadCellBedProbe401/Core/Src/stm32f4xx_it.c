@@ -63,8 +63,6 @@ extern uint8_t SpiDmaRxBuf[];
 extern float32_t ProbeScaleFactor;
 extern float32_t ProbeThresholdUp;
 extern float32_t ProbeThresholdDn;
-extern int32_t MA_buffer[MA_BUFFER_LENGTH];
-extern uint8_t MA_wr_idx;
 extern float32_t ProbeDataBuffer[];
 extern uint8_t ProbeDataPointer;
 /* USER CODE END EV */
@@ -243,9 +241,10 @@ void DMA1_Stream3_IRQHandler(void)
 			LL_GPIO_SetOutputPin(Probe_Out_GPIO_Port, Probe_Out_Pin);
 		}
 
-		MA_buffer[MA_wr_idx] = NewDataInt;
-		MA_wr_idx++;
-		MA_wr_idx &= ( MA_BUFFER_LENGTH - 1 );
+		ProbeDataBuffer[ProbeDataPointer] = NewDataF32;
+		ProbeDataBuffer[ProbeDataPointer + 1] = FilterOutput;
+		ProbeDataPointer += 2;
+		ProbeDataPointer &= 0xFF;
 	}
 
 	LL_GPIO_ResetOutputPin(SW1_GPIO_Port, SW1_Pin); //debug

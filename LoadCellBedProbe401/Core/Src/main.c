@@ -46,18 +46,16 @@
 /* USER CODE BEGIN PV */
 arm_biquad_cascade_df2T_instance_f32 * iir_inst = {0};
 
-
-int32_t MA_buffer[MA_BUFFER_LENGTH] = {0};
-uint8_t MA_wr_idx = 0;
-
 uint8_t SpiDmaRxBuf[8];
 uint8_t SpiDmaTxBuf[8];
 const uint8_t emptybuf[4]= { 0, 0, 0, 0 };
 
 const char __attribute__ ((aligned(4))) watchdog_message[] =
-												"Watchdog Reset!!!!!!!\n"
-												"Watchdog Reset!!!!!!!\n"
-												"Watchdog Reset!!!!!!!\n";
+		"*********************\n"
+		"Watchdog Reset!!!!!!!\n"
+		"Watchdog Reset!!!!!!!\n"
+		"Watchdog Reset!!!!!!!\n"
+		"*********************\n";
 
 static const char ThisFileName[] = "main.c";
 /* USER CODE END PV */
@@ -111,6 +109,11 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
+
+   // Configure both watchdog timers to be halted if the CPU is halted by the debugger
+   //
+   //*((volatile int *)(0xE0042008)) |= (1 << 11) | (1 << 12);
+   __HAL_DBGMCU_FREEZE_IWDG();
 
   /* USER CODE END SysInit */
 
@@ -193,6 +196,7 @@ int main(void)
 			  lc_mode = LC_PREPARE;
 			  break;
 		  }
+		  //TODO ADS1256 powerdown??
 		  if ( (LL_TIM_GetCounter(TIM2)) > LC_IDLE_PERIOD ) {
 			  LL_TIM_SetCounter(TIM2, 0);
 			  lc_do_lc_idle();
@@ -291,7 +295,7 @@ static void MX_IWDG_Init(void)
   LL_IWDG_Enable(IWDG);
   LL_IWDG_EnableWriteAccess(IWDG);
   LL_IWDG_SetPrescaler(IWDG, LL_IWDG_PRESCALER_4);
-  LL_IWDG_SetReloadCounter(IWDG, 1000);
+  LL_IWDG_SetReloadCounter(IWDG, 2000);
   while (LL_IWDG_IsReady(IWDG) != 1)
   {
   }

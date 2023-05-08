@@ -155,11 +155,6 @@ LC_StatusTypeDef lc_measure_load(float32_t *Load){
 
 }
 
-LC_StatusTypeDef lc_send_status(float32_t *values){
-	return LC_OK;
-}
-
-
 void lc_do_lc_idle(void){
 
 	LC_StatusStruct measurements;
@@ -178,7 +173,6 @@ void lc_do_lc_idle(void){
 	if (status != LC_OK) {
 		lc_Error_Handler( ThisFileName, sizeof(ThisFileName), __LINE__);
 	}
-
 
 	if ( LL_GPIO_IsInputPinSet(Control_GPIO_Port, Control_Pin) ){
 		return;

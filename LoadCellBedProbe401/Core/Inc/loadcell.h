@@ -5,7 +5,6 @@
 #include "ads1256.h"
 
 #define IIR_NUMSTAGES 	2
-#define MA_BUFFER_LENGTH 128
 #define SPI_TIMEOUT_US 	16
 #define V5V_SAMPLES 	64
 #define V5V_RATE		ADS1256_3750_SPS
