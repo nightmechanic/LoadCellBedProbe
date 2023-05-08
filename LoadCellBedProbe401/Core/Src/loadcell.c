@@ -37,7 +37,6 @@ const float32_t GramScaleFactor = 0.000894069671631f; //5V/23bit/pga_gain/mV/ext
 float32_t ProbeScaleFactor = GramScaleFactor * 1.0;
 float32_t ProbeThresholdUp;
 float32_t ProbeThresholdDn;
-uint32_t IdleCounter = 0;
 uint8_t dayFlag = 0;
 uint8_t dayDigit[3] = {0};
 
@@ -167,7 +166,15 @@ void lc_do_lc_idle(void){
 
 	const char digits[] = "0123456789";
 
-	IdleCounter++;
+	//Need to exit power down?
+	if ( !LL_GPIO_IsOutputPinSet(ADC_PDWN_GPIO_Port, ADC_PDWN_Pin) ){
+		LL_GPIO_SetOutputPin(ADC_PDWN_GPIO_Port, ADC_PDWN_Pin);
+		// wait for oscillator to settle
+		delay_us(20000);
+		delay_us(20000);
+	}
+
+
 	// Measure voltage
 	status = lc_measure_5V(&measurements.V5Voltage);
 	if (status != LC_OK) {
@@ -302,6 +309,9 @@ void lc_do_lc_idle(void){
 
 	CDC_Transmit_FS((uint8_t *)status_message, sizeof(status_message));
 
+	// ADS power down
+	LL_GPIO_ResetOutputPin(ADC_PDWN_GPIO_Port, ADC_PDWN_Pin);
+
 }
 
 void lc_do_lc_prepare(void){
@@ -310,6 +320,13 @@ void lc_do_lc_prepare(void){
 	float32_t V5Vmeasurement = 5.0;
 	float32_t Load = 0.0;
 
+	//Need to exit power down?
+	if ( !LL_GPIO_IsOutputPinSet(ADC_PDWN_GPIO_Port, ADC_PDWN_Pin) ){
+		LL_GPIO_SetOutputPin(ADC_PDWN_GPIO_Port, ADC_PDWN_Pin);
+		// wait for oscillator to settle
+		delay_us(20000);
+		delay_us(20000);
+	}
 
 	status = lc_measure_5V(&V5Vmeasurement);
 	if (status != LC_OK) {

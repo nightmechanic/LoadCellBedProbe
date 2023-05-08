@@ -135,7 +135,7 @@ int main(void)
   }
 
 
-  // set ADC SPI CS
+  	// set ADC SPI CS
 	LL_GPIO_SetOutputPin(ADC_CS_GPIO_Port, ADC_CS_Pin);
 	// Set probe output
 	LL_GPIO_SetOutputPin(Probe_Out_GPIO_Port, Probe_Out_Pin);
@@ -182,6 +182,13 @@ int main(void)
 
 	void lc_send_greeting(void);
 
+	LL_IWDG_ReloadCounter(IWDG);
+
+	if (ads1256_init() != ADS1256_OK) {
+		lc_Error_Handler( ThisFileName, sizeof(ThisFileName), __LINE__);
+	}
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -196,7 +203,7 @@ int main(void)
 			  lc_mode = LC_PREPARE;
 			  break;
 		  }
-		  //TODO ADS1256 powerdown??
+		  // Time to run the idle task?
 		  if ( (LL_TIM_GetCounter(TIM2)) > LC_IDLE_PERIOD ) {
 			  LL_TIM_SetCounter(TIM2, 0);
 			  lc_do_lc_idle();

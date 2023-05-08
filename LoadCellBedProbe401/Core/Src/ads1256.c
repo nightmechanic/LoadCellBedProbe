@@ -77,6 +77,13 @@ ADS1256C_StatusTypeDef ads1256_init(void){
 
 	ADS1256C_StatusTypeDef status;
 
+
+	// set ADC Power down pin
+	LL_GPIO_SetOutputPin(ADC_PDWN_GPIO_Port, ADC_PDWN_Pin);
+	// wait for oscillator to settle
+	delay_us(20000);
+	delay_us(20000);
+
 	//setup buffers
 	ads1256_HAL_Setup_Buffers(TX_Buffer, RX_Buffer);
 
